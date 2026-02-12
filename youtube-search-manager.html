@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検索ワードをお気に入り登録</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .add-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], select {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary.btn-small {
+            background: #ff0000;
+            font-weight: bold;
+        }
+
+        .btn-primary.btn-small:hover {
+            background: #cc0000;
+        }
+
+        .category-section {
+            padding: 20px 30px;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .category-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .category-name.favorite-heading {
+            color: #FFD700;
+        }
+
+        .favorite-section-divider {
+            border: none;
+            border-top: 3px solid #FFD700;
+            margin: 0 30px;
+        }
+
+        .edit-mode-toggle {
+            background: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .edit-mode-toggle.active {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .search-list {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .search-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .search-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .search-item.edit-mode {
+            cursor: default;
+        }
+
+        .search-item.edit-mode:hover {
+            transform: none;
+        }
+
+        .search-item.dragging {
+            opacity: 0.5;
+        }
+
+        .search-content {
+            flex: 1;
+        }
+
+        .search-keyword {
+            font-size: 16px;
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+
+        .search-memo {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .search-tags {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .search-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-edit:hover, .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            transition: transform 0.2s;
+            color: #ccc;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .favorite-btn.active {
+            color: #FFD700;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #212529;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group .checkbox-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group .checkbox-inline input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #adb5bd;
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .bulk-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 3px solid #667eea;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .bulk-actions-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #selected-count {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .bulk-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #bulk-category-select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #bulk-buttons-container select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .search-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .search-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .bulk-actions-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .bulk-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📺 検索ワードをお気に入り登録</h1>
+            <p>チャンネルごとではなく、【検索ワード】ごとに管理できるサイトです</p>
+        </div>
+
+        <div class="add-section">
+            <div class="input-group">
+                <input type="text" id="keyword-input" placeholder="検索ワードを入力（例：料理レシピ）">
+                <button class="btn-primary" onclick="addSearchWord()">追加</button>
+            </div>
+        </div>
+
+        <div id="search-lists"></div>
+
+        <div id="bulk-actions" class="bulk-actions" style="display: none;">
+            <div class="bulk-actions-content">
+                <span id="selected-count">0個選択中</span>
+                <div class="bulk-buttons" id="bulk-buttons-container">
+                    <!-- 動的に変更される -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編集モーダル -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">検索ワードを編集</div>
+            <div class="form-group">
+                <label>検索ワード</label>
+                <input type="text" id="edit-keyword" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>カテゴリ</label>
+                <div style="display: flex; gap: 10px;">
+                    <select id="edit-category" style="flex: 2;"></select>
+                    <button class="btn-secondary btn-small" onclick="addCategoryFromModal()" style="flex: 1;">新規追加</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>お気に入り</label>
+                <div class="checkbox-inline">
+                    <input type="checkbox" id="edit-favorited">
+                    <span>お気に入りに登録する</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>メモ（任意）</label>
+                <textarea id="edit-memo" placeholder="この検索ワードについてのメモを追加できます"></textarea>
+            </div>
+            <div class="form-group">
+                <label>タグ（カンマ区切り、任意）</label>
+                <input type="text" id="edit-tags" placeholder="例：料理, 簡単, 時短">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeEditModal()">キャンセル</button>
+                <button class="btn-primary" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // データ構造
+        let searchWords = [];
+        let categories = ['未分類'];
+        let editingIndex = -1;
+        let draggedElement = null;
+        let draggedIndex = -1;
+        let selectedIndices = new Set();
+        let isEditMode = false;
+
+        // ローカルストレージからデータを読み込む
+        function loadData() {
+            const saved = localStorage.getItem('youtubeSearchWords');
+            if (saved) {
+                const data = JSON.parse(saved);
+                searchWords = data.searchWords || [];
+                categories = data.categories || ['未分類'];
+                // 既存データにfavoritedが無い場合のマイグレーション
+                searchWords.forEach(word => {
+                    if (typeof word.favorited === 'undefined') {
+                        word.favorited = false;
+                    }
+                });
+            }
+            updateCategorySelect();
+            renderSearchLists();
+        }
+
+        // データを保存
+        function saveData() {
+            localStorage.setItem('youtubeSearchWords', JSON.stringify({
+                searchWords,
+                categories
+            }));
+        }
+
+        // カテゴリセレクトボックスを更新
+        function updateCategorySelect() {
+            const editSelect = document.getElementById('edit-category');
+
+            editSelect.innerHTML = '';
+
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                editSelect.appendChild(option);
+            });
+        }
+
+        // お気に入りをトグル
+        function toggleFavorite(index, event) {
+            event.stopPropagation();
+            searchWords[index].favorited = !searchWords[index].favorited;
+            saveData();
+            renderSearchLists();
+        }
+
+        // ★ボタンのHTMLを生成
+        function createFavoriteButton(index, favorited) {
+            const cls = favorited ? 'favorite-btn active' : 'favorite-btn';
+            const icon = favorited ? '★' : '☆';
+            return `<button class="${cls}" onclick="toggleFavorite(${index}, event)" title="お気に入り">${icon}</button>`;
+        }
+
+        // 検索ワードを追加
+        function addSearchWord() {
+            const keyword = document.getElementById('keyword-input').value.trim();
+
+            if (!keyword) {
+                alert('検索ワードを入力してください');
+                return;
+            }
+
+            searchWords.push({
+                keyword,
+                category: '未分類',
+                memo: '',
+                tags: [],
+                favorited: false,
+                createdAt: new Date().toISOString()
+            });
+
+            document.getElementById('keyword-input').value = '';
+            saveData();
+            renderSearchLists();
+        }
+
+        // 検索アイテムのHTML内容を構築する共通関数
+        function buildItemContent(word, isInFavoriteSection) {
+            let tagsHtml = '';
+            if (word.tags && word.tags.length > 0) {
+                tagsHtml = '<div class="search-tags">' +
+                    word.tags.map(tag => `<span class="tag">${tag}</span>`).join('') +
+                    '</div>';
+            }
+
+            let memoHtml = '';
+            if (word.memo) {
+                memoHtml = `<div class="search-memo">${word.memo}</div>`;
+            }
+
+            const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(word.keyword)}`;
+
+            if (isEditMode) {
+                return {
+                    html: `
+                        <div class="checkbox-container">
+                            <input type="checkbox" onchange="toggleSelection(${word.originalIndex})" ${selectedIndices.has(word.originalIndex) ? 'checked' : ''}>
+                        </div>
+                        <span class="drag-handle">⋮⋮</span>
+                        <div class="search-content">
+                            <div class="search-keyword">${word.keyword}</div>
+                            ${memoHtml}
+                            ${tagsHtml}
+                        </div>
+                        <div class="search-actions">
+                            ${createFavoriteButton(word.originalIndex, word.favorited)}
+                            <button class="btn-small btn-edit" onclick="event.stopPropagation(); openEditModal(${word.originalIndex})">編集</button>
+                            <button class="btn-small btn-delete" onclick="event.stopPropagation(); deleteSearchWord(${word.originalIndex})">削除</button>
+                        </div>
+                    `,
+                    youtubeUrl: null
+                };
+            } else {
+                return {
+                    html: `
+                        <div class="search-content" style="flex: 1;">
+                            <div class="search-keyword">${word.keyword}</div>
+                            ${memoHtml}
+                            ${tagsHtml}
+                        </div>
+                        <div class="search-actions">
+                            ${createFavoriteButton(word.originalIndex, word.favorited)}
+                        </div>
+                    `,
+                    youtubeUrl
+                };
+            }
+        }
+
+        // 検索ワードリストを表示
+        function renderSearchLists() {
+            const container = document.getElementById('search-lists');
+            container.innerHTML = '';
+
+            // お気に入りセクション
+            const favoriteWords = searchWords
+                .map((word, index) => ({ ...word, originalIndex: index }))
+                .filter(word => word.favorited);
+
+            if (favoriteWords.length > 0) {
+                const favSection = document.createElement('div');
+                favSection.className = 'category-section';
+
+                const favHeader = document.createElement('div');
+                favHeader.className = 'category-header';
+
+                if (isEditMode) {
+                    favHeader.innerHTML = `
+                        <div class="category-name favorite-heading">⭐ お気に入り</div>
+                        <button class="edit-mode-toggle active" onclick="toggleEditMode()">編集モード終了</button>
+                    `;
+                } else {
+                    favHeader.innerHTML = `
+                        <div class="category-name favorite-heading">⭐ お気に入り</div>
+                        <button class="edit-mode-toggle" onclick="toggleEditMode()">編集モード</button>
+                    `;
+                }
+
+                const favList = document.createElement('div');
+                favList.className = 'search-list';
+
+                favoriteWords.forEach(word => {
+                    const item = document.createElement('div');
+                    item.className = 'search-item' + (isEditMode ? ' edit-mode' : '');
+                    item.dataset.index = word.originalIndex;
+
+                    const content = buildItemContent(word, true);
+                    item.innerHTML = content.html;
+
+                    if (isEditMode) {
+                        item.draggable = true;
+                        item.addEventListener('dragstart', handleDragStart);
+                        item.addEventListener('dragover', handleDragOver);
+                        item.addEventListener('drop', handleDrop);
+                        item.addEventListener('dragend', handleDragEnd);
+                    } else {
+                        item.onclick = (e) => {
+                            window.open(content.youtubeUrl, '_blank');
+                        };
+                    }
+
+                    favList.appendChild(item);
+                });
+
+                favSection.appendChild(favHeader);
+                favSection.appendChild(favList);
+                container.appendChild(favSection);
+
+                // 区切り線
+                const divider = document.createElement('hr');
+                divider.className = 'favorite-section-divider';
+                container.appendChild(divider);
+            }
+
+            // 通常のカテゴリセクション
+            categories.forEach(category => {
+                const categoryWords = searchWords
+                    .map((word, index) => ({ ...word, originalIndex: index }))
+                    .filter(word => word.category === category);
+
+                if (categoryWords.length === 0) return;
+
+                const section = document.createElement('div');
+                section.className = 'category-section';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+
+                if (isEditMode) {
+                    header.innerHTML = `
+                        <div class="category-name">${category}</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="edit-mode-toggle" onclick="addNewCategoryInEditMode()">カテゴリ新規追加</button>
+                            <button class="edit-mode-toggle active" onclick="toggleEditMode()">編集モード終了</button>
+                        </div>
+                    `;
+                } else {
+                    header.innerHTML = `
+                        <div class="category-name">${category}</div>
+                        <button class="edit-mode-toggle" onclick="toggleEditMode()">編集モード</button>
+                    `;
+                }
+
+                const list = document.createElement('div');
+                list.className = 'search-list';
+
+                categoryWords.forEach((word) => {
+                    const item = document.createElement('div');
+                    item.className = 'search-item' + (isEditMode ? ' edit-mode' : '');
+                    item.dataset.index = word.originalIndex;
+
+                    const content = buildItemContent(word, false);
+                    item.innerHTML = content.html;
+
+                    if (isEditMode) {
+                        item.draggable = true;
+                        item.addEventListener('dragstart', handleDragStart);
+                        item.addEventListener('dragover', handleDragOver);
+                        item.addEventListener('drop', handleDrop);
+                        item.addEventListener('dragend', handleDragEnd);
+                    } else {
+                        item.onclick = (e) => {
+                            window.open(content.youtubeUrl, '_blank');
+                        };
+                    }
+
+                    list.appendChild(item);
+                });
+
+                section.appendChild(header);
+                section.appendChild(list);
+                container.appendChild(section);
+            });
+
+            if (searchWords.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <p>まだ検索ワードが登録されていません</p>
+                        <p>上のフォームから追加してみましょう！</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ドラッグ＆ドロップ処理
+        function handleDragStart(e) {
+            draggedElement = this;
+            draggedIndex = parseInt(this.dataset.index);
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            const dropIndex = parseInt(this.dataset.index);
+
+            if (draggedIndex !== dropIndex) {
+                const draggedItem = searchWords[draggedIndex];
+                searchWords.splice(draggedIndex, 1);
+
+                const newIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex;
+                searchWords.splice(newIndex, 0, draggedItem);
+
+                saveData();
+                renderSearchLists();
+            }
+
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedElement = null;
+            draggedIndex = -1;
+        }
+
+        // 編集モードを切り替え
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            selectedIndices.clear();
+            renderSearchLists();
+            updateBulkActions();
+        }
+
+        // 編集モード内でカテゴリを新規追加
+        function addNewCategoryInEditMode() {
+            const newCategory = prompt('新しいカテゴリ名を入力してください');
+
+            if (!newCategory || !newCategory.trim()) {
+                return;
+            }
+
+            const trimmedCategory = newCategory.trim();
+
+            if (categories.includes(trimmedCategory)) {
+                alert('このカテゴリは既に存在します');
+                return;
+            }
+
+            categories.push(trimmedCategory);
+            updateCategorySelect();
+            saveData();
+            renderSearchLists();
+        }
+
+        // モーダルからカテゴリを追加
+        function addCategoryFromModal() {
+            const newCategory = prompt('新しいカテゴリ名を入力してください');
+
+            if (!newCategory || !newCategory.trim()) {
+                return;
+            }
+
+            const trimmedCategory = newCategory.trim();
+
+            if (categories.includes(trimmedCategory)) {
+                alert('このカテゴリは既に存在します');
+                return;
+            }
+
+            categories.push(trimmedCategory);
+            updateCategorySelect();
+            document.getElementById('edit-category').value = trimmedCategory;
+            saveData();
+        }
+
+        // 選択状態をトグル
+        function toggleSelection(index) {
+            if (selectedIndices.has(index)) {
+                selectedIndices.delete(index);
+            } else {
+                selectedIndices.add(index);
+            }
+            updateBulkActions();
+        }
+
+        // 一括操作バーの表示を更新
+        function updateBulkActions() {
+            const bulkActions = document.getElementById('bulk-actions');
+            const selectedCount = document.getElementById('selected-count');
+            const bulkButtonsContainer = document.getElementById('bulk-buttons-container');
+
+            if (selectedIndices.size > 0) {
+                bulkActions.style.display = 'block';
+                selectedCount.textContent = `${selectedIndices.size}個選択中`;
+
+                if (isEditMode) {
+                    // 編集モード：カテゴリ変更と削除ボタン
+                    bulkButtonsContainer.innerHTML = `
+                        <select id="bulk-category-select">
+                            <option value="">カテゴリを選択</option>
+                            ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                        </select>
+                        <button class="btn-primary btn-small" onclick="bulkChangeCategory()">カテゴリ変更</button>
+                        <button class="btn-delete btn-small" onclick="bulkDelete()">削除</button>
+                    `;
+                } else {
+                    // 通常モード：YouTubeで検索ボタンのみ
+                    bulkButtonsContainer.innerHTML = `
+                        <button class="btn-primary btn-small" onclick="openYouTubeSelected()">YouTubeで検索</button>
+                    `;
+                }
+            } else {
+                bulkActions.style.display = 'none';
+            }
+        }
+
+        // 選択した検索ワードをYouTubeで検索
+        function openYouTubeSelected() {
+            if (selectedIndices.size === 0) {
+                alert('検索ワードを選択してください');
+                return;
+            }
+
+            const selectedKeywords = Array.from(selectedIndices).map(index => searchWords[index].keyword);
+            const searchQuery = selectedKeywords.join(' ');
+            const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+
+            window.open(youtubeUrl, '_blank');
+        }
+
+        // 選択した検索ワードのカテゴリを一括変更
+        function bulkChangeCategory() {
+            const select = document.querySelector('#bulk-buttons-container select');
+            const category = select ? select.value : '';
+
+            if (!category) {
+                alert('カテゴリを選択してください');
+                return;
+            }
+
+            if (selectedIndices.size === 0) {
+                alert('検索ワードを選択してください');
+                return;
+            }
+
+            selectedIndices.forEach(index => {
+                searchWords[index].category = category;
+            });
+
+            selectedIndices.clear();
+            saveData();
+            renderSearchLists();
+        }
+
+        // 選択した検索ワードを一括削除
+        function bulkDelete() {
+            if (selectedIndices.size === 0) {
+                alert('検索ワードを選択してください');
+                return;
+            }
+
+            if (confirm(`${selectedIndices.size}個の検索ワードを削除してもよろしいですか？`)) {
+                const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
+                indicesToDelete.forEach(index => {
+                    searchWords.splice(index, 1);
+                });
+
+                selectedIndices.clear();
+                saveData();
+                renderSearchLists();
+            }
+        }
+
+        // 編集モーダルを開く
+        function openEditModal(index) {
+            editingIndex = index;
+            const word = searchWords[index];
+
+            document.getElementById('edit-keyword').value = word.keyword;
+            document.getElementById('edit-category').value = word.category;
+            document.getElementById('edit-favorited').checked = !!word.favorited;
+            document.getElementById('edit-memo').value = word.memo || '';
+            document.getElementById('edit-tags').value = word.tags ? word.tags.join(', ') : '';
+
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        // 編集モーダルを閉じる
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+            editingIndex = -1;
+        }
+
+        // 編集を保存
+        function saveEdit() {
+            if (editingIndex === -1) return;
+
+            const keyword = document.getElementById('edit-keyword').value.trim();
+            const category = document.getElementById('edit-category').value;
+            const favorited = document.getElementById('edit-favorited').checked;
+            const memo = document.getElementById('edit-memo').value.trim();
+            const tagsInput = document.getElementById('edit-tags').value.trim();
+
+            if (!keyword) {
+                alert('検索ワードを入力してください');
+                return;
+            }
+
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            searchWords[editingIndex] = {
+                ...searchWords[editingIndex],
+                keyword,
+                category,
+                favorited,
+                memo,
+                tags
+            };
+
+            saveData();
+            renderSearchLists();
+            closeEditModal();
+        }
+
+        // 検索ワードを削除
+        function deleteSearchWord(index) {
+            if (confirm('この検索ワードを削除してもよろしいですか？')) {
+                searchWords[index].favorited = false;
+                searchWords.splice(index, 1);
+                saveData();
+                renderSearchLists();
+            }
+        }
+
+        // モーダルの外側クリックで閉じる
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // Enterキーで追加
+        document.getElementById('keyword-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addSearchWord();
+            }
+        });
+
+        // 初期化
+        loadData();
+    </script>
+</body>
+</html>
