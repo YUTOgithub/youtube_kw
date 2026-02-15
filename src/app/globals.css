@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s infinite;
+}
